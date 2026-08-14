@@ -217,6 +217,8 @@
     background:linear-gradient(180deg, #f57bab, var(--btn-pink));
     color:#fff;
     box-shadow:0 6px 0 var(--btn-pink-dark), 0 14px 22px rgba(210,80,140,0.35);
+    pointer-events:auto;
+    touch-action:manipulation;
   }
   .btn-yes:hover{
     transform:translateY(-3px);
@@ -257,7 +259,7 @@
     .buttons{
       min-height:150px;
       width:100%;
-      touch-action:none;
+      touch-action:manipulation;
     }
 
     .btn{
@@ -288,7 +290,7 @@
         <img src="Test/erm-fingers.gif" alt="chaton timide et mignon">
       </div>
 
-      <p class="close-text">Please don't close it... i made for u, <br>Hey Alex will you be my girlfriend? 🥺</p>
+      <p class="close-text">please don't close it... i made for u, <br>Hey Alex will you be my girlfriend? 🥺</p>
 
       <div class="buttons" id="buttons-zone">
         <button class="btn btn-yes" id="btn-yes">Yes</button>
@@ -429,11 +431,6 @@
 
     // Si le doigt commence près du bouton, il fuit immédiatement.
     moveNoAway(e.clientX, e.clientY, true);
-
-    // Empêche le clic/tap d'être interprété comme une action.
-    if (e.pointerType === 'touch') {
-      e.preventDefault();
-    }
   }
 
   // Pointer Events : fonctionne sur PC, Android, iPhone et tablette.
@@ -447,8 +444,7 @@
     lastPointerX = touch.clientX;
     lastPointerY = touch.clientY;
     moveNoAway(touch.clientX, touch.clientY, true);
-    e.preventDefault();
-  }, {passive:false});
+  }, {passive:true});
 
   zone.addEventListener('touchmove', (e) => {
     const touch = e.touches[0];
@@ -457,8 +453,7 @@
     lastPointerX = touch.clientX;
     lastPointerY = touch.clientY;
     moveNoAway(touch.clientX, touch.clientY);
-    e.preventDefault();
-  }, {passive:false});
+  }, {passive:true});
 
   // Sécurité supplémentaire : même si un clic est déclenché,
   // "No" ne fait absolument rien.
