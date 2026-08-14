@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hey... can we talk? 💌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Matemasie&family=DynaPuff:wght@400;500;600;700&family=Handlee&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fdf1f4;
+    --card-pink:#fbe1ea;
+    --card-border:#f3a9c4;
+    --tape-pink:#f0a3c1;
+    --psst-pink:#f24f95;
+    --grad-start:#ff6f9e;
+    --grad-end:#a06ee8;
+    --purple-text:#8459d1;
+    --btn-pink:#f0629b;
+    --btn-pink-dark:#d1487e;
+    --btn-pink-light:#f9c3d9;
+    --ink:#5c3a4a;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+
+  body{
+    font-family:'Poppins', sans-serif;
+    background-color:var(--cream);
+    background-image: radial-gradient(rgba(180,120,140,0.10) 1px, transparent 1.4px);
+    background-size:22px 22px;
+    min-height:100vh;
+    width:100%;
+    overflow:hidden;
+    position:relative;
+    color:var(--ink);
+  }
+
+  /* ---------- Ecran "ordinateur uniquement" ---------- */
+  #device-block{
+    position:fixed; inset:0;
+    background-color:var(--cream);
+    background-image: radial-gradient(rgba(180,120,140,0.10) 1px, transparent 1.4px);
+    background-size:22px 22px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    z-index:9999;
+    padding:2rem;
+  }
+  #device-block.show{ display:flex; }
+  #device-block .box{
+    max-width:400px;
+    background:var(--card-pink);
+    border:2px dashed var(--card-border);
+    border-radius:24px;
+    padding:2.4rem 2rem;
+  }
+  #device-block .icon{ color:var(--btn-pink); margin-bottom:1rem; }
+  #device-block h2{
+    font-family:'DynaPuff', cursive;
+    font-weight:600;
+    font-size:1.2rem;
+    color:var(--psst-pink);
+    margin-bottom:0.8rem;
+  }
+  #device-block p{
+    font-weight:400;
+    font-size:0.92rem;
+    line-height:1.6;
+    color:var(--ink);
+    opacity:0.85;
+  }
+
+  /* ---------- contenu principal ---------- */
+  #app{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:3rem 2rem;
+  }
+
+  .card{
+    position:relative;
+    width:100%;
+    max-width:520px;
+    background:var(--card-pink);
+    border-radius:28px;
+    padding:3.2rem 2.6rem 2.6rem;
+    text-align:center;
+    box-shadow:0 25px 60px rgba(210,120,150,0.35);
+    animation:cardIn 0.8s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    inset:12px;
+    border:2px dashed var(--card-border);
+    border-radius:20px;
+    pointer-events:none;
+  }
+  @keyframes cardIn{
+    from{ opacity:0; transform:translateY(24px) scale(0.97); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  /* stickers décoratifs */
+  .corner-emoji{
+    position:absolute;
+    top:-16px; left:18px;
+    font-size:1.9rem;
+    transform:rotate(-8deg);
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+    animation:wiggle 3.5s ease-in-out infinite;
+  }
+  @keyframes wiggle{
+    0%,100%{ transform:rotate(-8deg); }
+    50%{ transform:rotate(-2deg); }
+  }
+
+  .washi-tape{
+    position:absolute;
+    top:-20px; left:50%;
+    transform:translateX(-50%) rotate(-3deg);
+    width:150px; height:46px;
+    background:repeating-linear-gradient(-45deg, var(--tape-pink), var(--tape-pink) 8px, #eb93b8 8px, #eb93b8 16px);
+    opacity:0.9;
+    box-shadow:0 6px 12px rgba(0,0,0,0.12);
+    border-radius:2px;
+  }
+
+  .envelope{
+    position:absolute;
+    bottom:-14px; right:20px;
+    font-size:1.6rem;
+    transform:rotate(10deg);
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+
+  .psst{
+    font-family:'Matemasie', cursive;
+    font-size:1.15rem;
+    color:var(--psst-pink);
+    margin-top:0.6rem;
+    margin-bottom:0.4rem;
+    letter-spacing:0.5px;
+  }
+
+  h1.headline{
+    font-family:'DynaPuff', cursive;
+    font-weight:700;
+    font-size:clamp(1.8rem, 4.2vw, 2.5rem);
+    line-height:1.25;
+    margin-bottom:1.8rem;
+    background:linear-gradient(90deg, var(--grad-start), var(--grad-end));
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+    color:var(--grad-start);
+  }
+
+  .gif-frame{
+    width:230px;
+    height:230px;
+    margin:0 auto 1.6rem;
+    border-radius:20px;
+    background:#fff;
+    padding:6px;
+    box-shadow:0 12px 24px rgba(210,120,150,0.3);
+    transform:rotate(-1.5deg);
+  }
+  .gif-frame img{
+    width:100%; height:100%;
+    object-fit:cover;
+    border-radius:15px;
+    display:block;
+    background:var(--card-border);
+  }
+
+  .close-text{
+    font-family:'Handlee', cursive;
+    font-size:1.25rem;
+    line-height:1.55;
+    color:var(--purple-text);
+    max-width:380px;
+    margin:0 auto 2.4rem;
+  }
+
+  .buttons{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:1.2rem;
+    min-height:90px;
+  }
+
+  .btn{
+    border:none;
+    outline:none;
+    font-family:'DynaPuff', cursive;
+    font-weight:700;
+    font-size:1rem;
+    cursor:pointer;
+    border-radius:999px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-yes{
+    padding:1rem 2.6rem;
+    background:linear-gradient(180deg, #f57bab, var(--btn-pink));
+    color:#fff;
+    box-shadow:0 6px 0 var(--btn-pink-dark), 0 14px 22px rgba(210,80,140,0.35);
+  }
+  .btn-yes:hover{
+    transform:translateY(-3px);
+    box-shadow:0 9px 0 var(--btn-pink-dark), 0 18px 26px rgba(210,80,140,0.4);
+  }
+
+  .btn-no{
+    position:absolute;
+    padding:0.9rem 2.1rem;
+    background:#fff;
+    color:var(--btn-pink);
+    border:2px solid var(--btn-pink-light);
+    box-shadow:0 5px 0 var(--btn-pink-light), 0 10px 18px rgba(210,80,140,0.18);
+    transition:transform 0.1s ease-out, left 0.12s ease-out, top 0.12s ease-out, border-color 0.15s ease;
+  }
+  .btn-no:hover{ border-color:var(--btn-pink); }
+
+  .status{
+    margin-top:1.6rem;
+    min-height:1.3rem;
+    font-family:'Poppins', sans-serif;
+    font-size:0.85rem;
+    font-weight:500;
+    color:var(--psst-pink);
+    opacity:0;
+    transition:opacity 0.4s ease;
+  }
+  .status.show{ opacity:1; }
+
+  @media (max-width:560px){
+    .card{ padding:2.8rem 1.6rem 2.2rem; }
+    .gif-frame{ width:190px; height:190px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Message affiché uniquement sur mobile / tablette -->
+  <div id="device-block">
+    <div class="box">
+      <div class="icon">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
+          <rect x="2.5" y="4.5" width="19" height="12.5" rx="1.2"/>
+          <line x1="8" y1="20.5" x2="16" y2="20.5"/>
+          <line x1="12" y1="17" x2="12" y2="20.5"/>
+        </svg>
+      </div>
+      <h2>psst... pas ici 🥺</h2>
+      <p>Cette petite surprise a été pensée pour un ordinateur.<br>Reviens depuis ton PC pour la découvrir ~</p>
+    </div>
+  </div>
+
+  <div id="app">
+    <div class="card">
+      <div class="corner-emoji">🥺</div>
+      <div class="washi-tape"></div>
+
+      <p class="psst">psssst...</p>
+      <h1 class="headline">hey... can we talk?</h1>
+
+      <div class="gif-frame">
+        <img src="Test/erm-fingers.gif" alt="chaton timide et mignon">
+      </div>
+
+      <p class="close-text">please don't close it... i made for u, <br>Will you be my girlfriend? 🥺</p>
+
+      <div class="buttons" id="buttons-zone">
+        <button class="btn btn-yes" id="btn-yes">Yes</button>
+        <button class="btn btn-no" id="btn-no">No</button>
+      </div>
+
+      <p class="status" id="status"></p>
+
+      <div class="envelope">💌</div>
+    </div>
+  </div>
+
+<script>
+  /* =========================================================
+     1) Blocage mobile / tablette — desktop uniquement
+     ========================================================= */
+  function isMobileOrTablet(){
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const uaMatch = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i.test(ua);
+    const touchAndSmall = (('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.innerWidth < 1024;
+    const smallScreen = window.innerWidth < 1024;
+    return uaMatch || touchAndSmall || smallScreen;
+  }
+
+  function checkDevice(){
+    const blocker = document.getElementById('device-block');
+    if(isMobileOrTablet()){
+      blocker.classList.add('show');
+    } else {
+      blocker.classList.remove('show');
+    }
+  }
+  checkDevice();
+  window.addEventListener('resize', checkDevice);
+
+  /* =========================================================
+     2) Le bouton "No" fuit le curseur et n'est jamais cliquable
+     ========================================================= */
+  const zone = document.getElementById('buttons-zone');
+  const btnNo = document.getElementById('btn-no');
+  const btnYes = document.getElementById('btn-yes');
+
+  function placeNoInitially(){
+    const yesRect = btnYes.getBoundingClientRect();
+    btnNo.style.left = (yesRect.width + 22) + 'px';
+    btnNo.style.top = '6px';
+  }
+
+  function moveNoAway(clientX, clientY){
+    const zoneRect = zone.getBoundingClientRect();
+    const btnRect = btnNo.getBoundingClientRect();
+    const btnW = btnRect.width;
+    const btnH = btnRect.height;
+
+    let curLeft = btnRect.left - zoneRect.left;
+    let curTop = btnRect.top - zoneRect.top;
+
+    const btnCenterX = btnRect.left + btnW/2;
+    const btnCenterY = btnRect.top + btnH/2;
+    let dx = btnCenterX - clientX;
+    let dy = btnCenterY - clientY;
+    let dist = Math.sqrt(dx*dx + dy*dy) || 1;
+
+    const fleeDistance = 140;
+    const nx = (dx/dist) * fleeDistance;
+    const ny = (dy/dist) * fleeDistance;
+
+    let newLeft = curLeft + nx;
+    let newTop = curTop + ny;
+
+    const maxLeft = zoneRect.width - btnW - 4;
+    const maxTop = 220;
+    const minLeft = 4;
+    const minTop = -140;
+
+    if(newLeft < minLeft) newLeft = minLeft + Math.random()*40;
+    if(newLeft > maxLeft) newLeft = maxLeft - Math.random()*40;
+    if(newTop < minTop) newTop = minTop + Math.random()*30;
+    if(newTop > maxTop) newTop = maxTop - Math.random()*30;
+
+    btnNo.style.left = newLeft + 'px';
+    btnNo.style.top = newTop + 'px';
+  }
+
+  placeNoInitially();
+  window.addEventListener('resize', placeNoInitially);
+
+  btnNo.addEventListener('mouseenter', (e) => moveNoAway(e.clientX, e.clientY));
+  btnNo.addEventListener('mousemove', (e) => moveNoAway(e.clientX, e.clientY));
+  btnNo.addEventListener('click', (e) => {
+    e.preventDefault();
+    moveNoAway(e.clientX, e.clientY);
+  });
+
+  /* =========================================================
+     3) Le survol de "Yes" envoie un message WhatsApp
+     ========================================================= */
+  // ⚠️ Remplace le numéro ci-dessous par le tien, au format international sans "+" ni espaces
+  // Exemple : France 06 12 34 56 78 -> "33612345678"
+  const WHATSAPP_NUMBER = "+14188605984"; // <-- À MODIFIER
+  const WHATSAPP_MESSAGE = "D'accord, je veux être ta petite amie 💕";
+
+  const statusEl = document.getElementById('status');
+  let messageSent = false;
+
+  btnYes.addEventListener('mouseenter', () => {
+    if(messageSent) return;
+    messageSent = true;
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+    window.open(url, '_blank');
+
+    statusEl.textContent = "message envoyé sur WhatsApp ~ 💌";
+    statusEl.classList.add('show');
+  });
+</script>
+</body>
+</html>
