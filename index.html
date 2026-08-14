@@ -230,9 +230,13 @@
     color:var(--btn-pink);
     border:2px solid var(--btn-pink-light);
     box-shadow:0 5px 0 var(--btn-pink-light), 0 10px 18px rgba(210,80,140,0.18);
-    transition:transform 0.1s ease-out, left 0.12s ease-out, top 0.12s ease-out, border-color 0.15s ease;
+    transition:left 0.10s ease-out, top 0.10s ease-out, border-color 0.15s ease;
+    /* Le bouton ne reçoit jamais directement le toucher/clic.
+       C'est la zone autour qui détecte le doigt ou la souris. */
+    pointer-events:none;
+    user-select:none;
+    -webkit-user-select:none;
   }
-  .btn-no:hover{ border-color:var(--btn-pink); }
 
   .status{
     margin-top:1.6rem;
@@ -249,25 +253,28 @@
   @media (max-width:560px){
     .card{ padding:2.8rem 1.6rem 2.2rem; }
     .gif-frame{ width:190px; height:190px; }
+
+    .buttons{
+      min-height:150px;
+      width:100%;
+      touch-action:none;
+    }
+
+    .btn{
+      font-size:0.95rem;
+    }
+
+    .btn-yes{
+      padding:0.95rem 2rem;
+    }
+
+    .btn-no{
+      padding:0.85rem 1.8rem;
+    }
   }
 </style>
 </head>
 <body>
-
-  <!-- Message affiché uniquement sur mobile / tablette -->
-  <div id="device-block">
-    <div class="box">
-      <div class="icon">
-        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
-          <rect x="2.5" y="4.5" width="19" height="12.5" rx="1.2"/>
-          <line x1="8" y1="20.5" x2="16" y2="20.5"/>
-          <line x1="12" y1="17" x2="12" y2="20.5"/>
-        </svg>
-      </div>
-      <h2>psst... pas ici 🥺</h2>
-      <p>Cette petite surprise a été pensée pour un ordinateur.<br>Reviens depuis ton PC pour la découvrir ~</p>
-    </div>
-  </div>
 
   <div id="app">
     <div class="card">
@@ -281,7 +288,7 @@
         <img src="Test/erm-fingers.gif" alt="chaton timide et mignon">
       </div>
 
-      <p class="close-text">please don't close it... i made for u, <br>Hey Alex will you be my girlfriend? 🥺</p>
+      <p class="close-text">Please don't close it... i made for u, <br>Hey Alex will you be my girlfriend? 🥺</p>
 
       <div class="buttons" id="buttons-zone">
         <button class="btn btn-yes" id="btn-yes">Yes</button>
@@ -296,85 +303,172 @@
 
 <script>
   /* =========================================================
-     1) Blocage mobile / tablette — desktop uniquement
-     ========================================================= */
-  function isMobileOrTablet(){
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    const uaMatch = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i.test(ua);
-    const touchAndSmall = (('ontouchstart' in window) || navigator.maxTouchPoints > 0) && window.innerWidth < 1024;
-    const smallScreen = window.innerWidth < 1024;
-    return uaMatch || touchAndSmall || smallScreen;
-  }
-
-  function checkDevice(){
-    const blocker = document.getElementById('device-block');
-    if(isMobileOrTablet()){
-      blocker.classList.add('show');
-    } else {
-      blocker.classList.remove('show');
-    }
-  }
-  checkDevice();
-  window.addEventListener('resize', checkDevice);
-
-  /* =========================================================
-     2) Le bouton "No" fuit le curseur et n'est jamais cliquable
+     1) Le bouton "No" fuit la souris ET le doigt
      ========================================================= */
   const zone = document.getElementById('buttons-zone');
   const btnNo = document.getElementById('btn-no');
   const btnYes = document.getElementById('btn-yes');
 
+  let lastPointerX = null;
+  let lastPointerY = null;
+  let moving = false;
+
   function placeNoInitially(){
+    const zoneRect = zone.getBoundingClientRect();
     const yesRect = btnYes.getBoundingClientRect();
-    btnNo.style.left = (yesRect.width + 22) + 'px';
-    btnNo.style.top = '6px';
+
+    // Position de départ juste à droite de "Yes".
+    btnNo.style.left = Math.max(4, yesRect.right - zoneRect.left + 18) + 'px';
+    btnNo.style.top = Math.max(4, (zoneRect.height - btnNo.offsetHeight) / 2) + 'px';
   }
 
-  function moveNoAway(clientX, clientY){
+  function moveNoAway(clientX, clientY, force = false){
     const zoneRect = zone.getBoundingClientRect();
     const btnRect = btnNo.getBoundingClientRect();
+
     const btnW = btnRect.width;
     const btnH = btnRect.height;
+    const btnCenterX = btnRect.left + btnW / 2;
+    const btnCenterY = btnRect.top + btnH / 2;
 
-    let curLeft = btnRect.left - zoneRect.left;
-    let curTop = btnRect.top - zoneRect.top;
+    const dx = btnCenterX - clientX;
+    const dy = btnCenterY - clientY;
+    const dist = Math.hypot(dx, dy);
 
-    const btnCenterX = btnRect.left + btnW/2;
-    const btnCenterY = btnRect.top + btnH/2;
-    let dx = btnCenterX - clientX;
-    let dy = btnCenterY - clientY;
-    let dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    // Plus la proximité est grande, plus le bouton fuit tôt.
+    // Sur tactile, on utilise une zone de fuite généreuse.
+    const fleeRadius = 155;
 
-    const fleeDistance = 140;
-    const nx = (dx/dist) * fleeDistance;
-    const ny = (dy/dist) * fleeDistance;
+    if (!force && dist > fleeRadius) return;
+    if (moving) return;
 
-    let newLeft = curLeft + nx;
-    let newTop = curTop + ny;
+    moving = true;
 
-    const maxLeft = zoneRect.width - btnW - 4;
-    const maxTop = 220;
-    const minLeft = 4;
-    const minTop = -140;
+    let nx;
+    let ny;
 
-    if(newLeft < minLeft) newLeft = minLeft + Math.random()*40;
-    if(newLeft > maxLeft) newLeft = maxLeft - Math.random()*40;
-    if(newTop < minTop) newTop = minTop + Math.random()*30;
-    if(newTop > maxTop) newTop = maxTop - Math.random()*30;
+    if (dist < 1) {
+      // Si le doigt est exactement au centre du bouton,
+      // choisir une direction aléatoire.
+      const angle = Math.random() * Math.PI * 2;
+      nx = Math.cos(angle);
+      ny = Math.sin(angle);
+    } else {
+      nx = dx / dist;
+      ny = dy / dist;
+    }
+
+    // Mouvement plus important sur téléphone/tablette.
+    const isTouch = lastPointerX !== null;
+    const fleeDistance = isTouch ? 180 : 145;
+
+    let newLeft = (btnRect.left - zoneRect.left) + nx * fleeDistance;
+    let newTop = (btnRect.top - zoneRect.top) + ny * fleeDistance;
+
+    const padding = 5;
+    const maxLeft = Math.max(padding, zoneRect.width - btnW - padding);
+
+    // On laisse le bouton monter/descendre dans une zone assez large,
+    // sans le faire sortir de la carte.
+    const maxTop = Math.max(padding, zoneRect.height - btnH - padding);
+
+    newLeft = Math.max(padding, Math.min(maxLeft, newLeft));
+    newTop = Math.max(padding, Math.min(maxTop, newTop));
+
+    // Si la direction demandée mène contre un bord, chercher
+    // une autre position aléatoire éloignée du doigt.
+    const candidateDist = Math.hypot(
+      (zoneRect.left + newLeft + btnW / 2) - clientX,
+      (zoneRect.top + newTop + btnH / 2) - clientY
+    );
+
+    if (candidateDist < fleeRadius * 0.72) {
+      let bestLeft = newLeft;
+      let bestTop = newTop;
+      let bestDist = candidateDist;
+
+      for (let i = 0; i < 18; i++) {
+        const testLeft = padding + Math.random() * Math.max(1, maxLeft - padding);
+        const testTop = padding + Math.random() * Math.max(1, maxTop - padding);
+        const testDist = Math.hypot(
+          (zoneRect.left + testLeft + btnW / 2) - clientX,
+          (zoneRect.top + testTop + btnH / 2) - clientY
+        );
+
+        if (testDist > bestDist) {
+          bestDist = testDist;
+          bestLeft = testLeft;
+          bestTop = testTop;
+        }
+      }
+
+      newLeft = bestLeft;
+      newTop = bestTop;
+    }
 
     btnNo.style.left = newLeft + 'px';
     btnNo.style.top = newTop + 'px';
+
+    requestAnimationFrame(() => {
+      moving = false;
+    });
   }
+
+  function handlePointerMove(e){
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+
+    // Sur souris comme sur tactile : dès que le pointeur/doigt
+    // approche du bouton, celui-ci s'éloigne.
+    moveNoAway(e.clientX, e.clientY);
+  }
+
+  function handlePointerDown(e){
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+
+    // Si le doigt commence près du bouton, il fuit immédiatement.
+    moveNoAway(e.clientX, e.clientY, true);
+
+    // Empêche le clic/tap d'être interprété comme une action.
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+    }
+  }
+
+  // Pointer Events : fonctionne sur PC, Android, iPhone et tablette.
+  zone.addEventListener('pointermove', handlePointerMove, {passive:true});
+  zone.addEventListener('pointerdown', handlePointerDown, {passive:false});
+
+  // Fallback tactile pour certains vieux navigateurs mobiles.
+  zone.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    lastPointerX = touch.clientX;
+    lastPointerY = touch.clientY;
+    moveNoAway(touch.clientX, touch.clientY, true);
+    e.preventDefault();
+  }, {passive:false});
+
+  zone.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    lastPointerX = touch.clientX;
+    lastPointerY = touch.clientY;
+    moveNoAway(touch.clientX, touch.clientY);
+    e.preventDefault();
+  }, {passive:false});
+
+  // Sécurité supplémentaire : même si un clic est déclenché,
+  // "No" ne fait absolument rien.
+  btnNo.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
 
   placeNoInitially();
   window.addEventListener('resize', placeNoInitially);
-
-  btnNo.addEventListener('mouseenter', (e) => moveNoAway(e.clientX, e.clientY));
-  btnNo.addEventListener('mousemove', (e) => moveNoAway(e.clientX, e.clientY));
-  btnNo.addEventListener('click', (e) => {
-    e.preventDefault();
-    moveNoAway(e.clientX, e.clientY);
-  });
 
   /* =========================================================
      3) Le survol de "Yes" envoie un message WhatsApp
